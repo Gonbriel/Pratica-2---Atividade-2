@@ -1,0 +1,129 @@
+/* custom.css — Prática Estatística II, Atividade Avaliativa 2
+   Usado pelo Atividade 2 - Prática 2.qmd (format: revealjs, css: custom.css) */
+
+/* ============================================================
+   SLIDE DE CAPA
+   Estrutura real gerada pelo Quarto (verificada com render local):
+   <section id="title-slide" class="quarto-title-block center"
+             data-background-image="Capa.jpeg">
+     <h1 class="title">...</h1>
+     <p class="subtitle">...</p>
+     <div class="quarto-title-authors">...</div>
+     <p class="date">...</p>
+   </section>
+   ============================================================ */
+#title-slide {
+  position: relative;
+  color: #ffffff;
+}
+
+/* Camada escura sobre a imagem de fundo, para o texto branco não se
+   perder em fotos claras como a Capa.jpeg */
+#title-slide::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(6, 14, 12, 0.6) 0%,
+    rgba(6, 14, 12, 0.72) 60%,
+    rgba(6, 14, 12, 0.85) 100%
+  );
+  z-index: 0;
+}
+
+/* Mantém o conteúdo do título acima da camada escura */
+#title-slide > * {
+  position: relative;
+  z-index: 1;
+}
+
+#title-slide h1.title,
+#title-slide p.subtitle {
+  color: #ffffff !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.75), 0 0 2px rgba(0, 0, 0, 0.9);
+}
+
+#title-slide .quarto-title-authors,
+#title-slide .quarto-title-author-name,
+#title-slide .quarto-title-affiliation,
+#title-slide .date,
+#title-slide a.email {
+  color: #f4fdfa !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* ============================================================
+   SLIDE "Resultados" — layout e cabeçalho fixo da tabela
+   ============================================================ */
+
+/* O reveal.js centraliza verticalmente o conteúdo de cada slide com
+   base na altura do próprio conteúdo — o que deixa o texto meio
+   "solto" mais para baixo em slides com pouco conteúdo (Resultados e
+   Conclusão), e cortado no topo quando o conteúdo é mais alto que o
+   slide (a tabela). Por isso alinhamos os slides de conteúdo ao topo,
+   deixando só a capa com a centralização padrão do reveal.js. */
+#resultados,
+#conclusão {
+  top: 0 !important;
+}
+
+/* A tabela fica dentro de uma caixa de altura fixa com rolagem
+   própria (envolvida no .qmd com ::: {.table-wrap} ... :::), em vez
+   de depender do slide inteiro rolar — assim o layout não quebra. */
+.table-wrap {
+  max-height: 530px;
+  overflow-y: auto;
+  margin-top: 0.4em;
+  border: 1px solid #cfe3dd;
+  border-radius: 8px;
+}
+
+/* Cabeçalho da tabela (gt/gtsummary) fixo ao rolar dentro da caixa.
+   gt gera duas linhas de cabeçalho em <thead>: a linha de
+   agrupamento (tr.gt_col_headings.gt_spanner_row, ex.: "Diagnóstico
+   de Asma") e a linha de nomes de coluna (tr.gt_col_headings, ex.:
+   "Variáveis"). Testado e confirmado com o HTML real gerado no seu
+   RStudio (o cabeçalho fica fixo ao rolar). */
+.table-wrap table.gt_table thead tr.gt_col_headings th {
+  position: sticky !important;
+  z-index: 2;
+  background-color: #1f6f5c !important;
+  color: #ffffff !important;
+}
+
+.table-wrap table.gt_table thead tr.gt_col_headings.gt_spanner_row th {
+  top: 0;
+  z-index: 3;
+}
+
+.table-wrap table.gt_table thead tr.gt_col_headings:not(.gt_spanner_row) th {
+  top: 37px; /* altura real da primeira linha do cabeçalho, medida no render */
+  z-index: 2;
+  background-color: #134c3f !important;
+}
+
+/* Negrito no valor-p já é feito pelo bold_p(t = 0.05) no seu código R
+   (linha do tbl_summary) — não precisa de CSS para isso, ele já bolda
+   só a linha significativa (Saúde Mental, p = 0,012). */
+
+/* Correção crítica: position:sticky NÃO funciona em th/td quando a
+   tabela usa border-collapse:collapse (limitação conhecida de todos
+   os navegadores). O gt aplica collapse por padrão, então trocamos
+   para separate (mantendo a aparência com border-spacing:0). */
+.table-wrap table.gt_table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+/* O gt embrulha a tabela em uma div própria (id aleatório, muda a
+   cada render) e o Quarto adiciona .cell-output-display por cima —
+   ambas com overflow:auto. Isso quebra o position:sticky, porque ele
+   passa a grudar nessas divs internas (que não rolam de verdade) em
+   vez da nossa .table-wrap (que é quem realmente rola). Neutralizamos
+   o overflow delas para que .table-wrap volte a ser o contêiner de
+   rolagem de verdade. */
+.table-wrap .cell-output-display,
+.table-wrap .cell-output-display > div {
+  overflow: visible !important;
+}

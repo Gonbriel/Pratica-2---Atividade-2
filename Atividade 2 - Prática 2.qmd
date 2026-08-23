@@ -1,0 +1,159 @@
+---
+title: '**PRÁTICA ESTATÍSTICA II**'
+author: "Gabriel Gonçalves (<g_goncalves@id.uff.br>) <br> Olga Grichtchouk (<ogrichtchouk@id.uff.br>)"
+date: "today"
+subtitle: '**Atividade Avaliativa 2**'
+date-format: DD/MM/YYYY
+institute: Universidade Federal Fluminense
+format:
+  revealjs:
+    css: custom.css
+    slide-number: true
+    incremental: false
+    transition: slide
+    background-transition: fade
+    width: 1280
+    height: 720
+    margin: 0.07
+    auto-stretch: false
+    title-slide-attributes:
+      data-background-image: Capa.jpeg
+      data-background-size: cover
+      resource_files:
+      - Capa.jpeg
+---
+
+## Resultados
+
+::: {.table-wrap}
+
+```{r}
+library(gtsummary)
+library(gt)
+library(openxlsx)
+library(rstatix)
+
+theme_gtsummary_language("pt", big.mark = ".", decimal.mark = ",")
+
+dados <- read.xlsx("DadosFatoresRisco.xlsx")
+
+dados$IMC <- factor(
+  dados$IMC,
+  levels = c(
+    "< 25",
+    "25 a 29,9",
+    "30 ou mais"
+  )
+)
+
+dados$Saude_Fisica <- factor(
+  dados$Saude_Fisica,
+  levels = c(
+    "Nenhum dia",
+    "1 a 13 dias",
+    "14 dias ou mais"
+  )
+)
+
+dados$Saude_Mental <- factor(
+  dados$Saude_Mental,
+  levels = c(
+    "Nenhum dia",
+    "1 a 13 dias",
+    "14 dias ou mais"
+  )
+)
+
+dados$Faixa_Idade <- factor(
+  dados$Faixa_Idade,
+  levels = c(
+    "18 a 44 anos",
+    "45 a 64 anos",
+    "65 anos ou mais"
+  )
+)
+
+dados$Saude_Geral <- factor(
+  dados$Saude_Geral,
+  levels = c(
+    "Razoável/Ruim",
+    "Boa",
+    "Excelente/Muito boa"
+  )
+)
+
+dados$Tempo_Dormir <- factor(
+  dados$Tempo_Dormir,
+  levels = c(
+    "Menos de 7 horas",
+    "7 a 9 horas",
+    "Mais de 9 horas"
+  )
+)
+
+DadosQuali = dados %>% select(IMC, Cigarro, Consumo_Alcool, Saude_Fisica, Saude_Mental, Dificuldade_Andar, Sexo, Faixa_Idade, Raca, Atividade_Fisica, Saude_Geral, Tempo_Dormir, Asma)
+
+# Função que calcula o coeficiente de Cramer
+cramer_fun <- function(data, variable, by, ...) {
+  tab <- table(data[[variable]], data[[by]])
+  v <- cramer_v(tab)
+  tibble::tibble(`**Cramér**` = round(v, 3))
+}
+
+# Código da tabela
+
+tbl_summary(data = DadosQuali,
+            by = Asma,
+            percent = "row",
+            label = list(
+              IMC ~ "IMC<sup>Q</sup>",
+              Cigarro ~ "Cigarro<sup>Q</sup>",
+              Consumo_Alcool ~ "Consumo de álcool<sup>F</sup>",
+              Saude_Fisica ~"Saúde Física<sup>Q</sup>",
+              Saude_Mental ~ "Saúde Mental<sup>Q</sup>",
+              Dificuldade_Andar ~ "Dificuldade para andar<sup>Q</sup>",
+              Sexo ~ "Sexo<sup>Q</sup>",
+              Faixa_Idade ~ "Faixa de Idade<sup>Q</sup>",
+              Raca ~ "Raça/Cor<sup>F</sup>",
+              Atividade_Fisica ~ "Atividade Física<sup>Q</sup>",
+              Saude_Geral ~ "Saúde Geral<sup>Q</sup>",
+              Tempo_Dormir ~ "Tempo de dormir<sup>F</sup>"
+            )
+)%>%
+  add_p(pvalue_fun = label_style_pvalue(digits = 3)) %>%
+  bold_p(t = 0.05) %>%
+  add_stat(fns = everything() ~ cramer_fun)%>%
+  modify_spanning_header(all_stat_cols() ~ "**Diagnóstico de Asma**") %>%
+  modify_header(label ~ "**Variáveis**") %>%
+  bold_labels() %>%
+  modify_header(all_stat_cols() ~ "**{level}**<br>{n} ({style_percent(p)}%)")%>%
+  modify_bold(
+    columns = stat_1,  # primeira coluna
+    rows = (variable == "Saude_Mental" & label == "Nenhum dia")
+  )%>% 
+  modify_bold(
+    columns = stat_2,  # segunda coluna
+    rows = (variable == "Saude_Mental" & label == "Nenhum dia")) %>%
+  modify_footnote(everything() ~ NA)%>%
+  as_gt() %>%                   
+  fmt_markdown(columns = label) %>%
+  tab_options(
+    table.font.size = "20px",    
+    heading.title.font.size = "26px",
+    column_labels.font.size = "22px"
+  )
+
+
+```
+
+:::
+
+## Conclusão
+
+::: box-green
+-   A maior parte dos participantes não possui asma (86%) em comparação aos que possuem (14%);
+
+-   A única variável observada que apresentou associação estatisticamente significativa foi de **saúde mental** (p= 0,012, V = 0,171) com magnitude fraca;
+
+-   **Análise dos resíduos padronizados:** Participantes que não tiveram dias ruins relacionados à saúde mental obtiveram proporção de diagnóstico de asma abaixo do esperado e proporção de diagnóstico negativo acima do esperado.
+:::
